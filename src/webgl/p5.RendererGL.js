@@ -495,6 +495,11 @@ p5.RendererGL.prototype.clear = function() {
  * @todo implement handle for components or vector as args
  */
 p5.RendererGL.prototype.translate = function(x, y, z) {
+  if(x instanceof p5.Vector) {
+    z = x.z;
+    y = x.y;
+    x = x.x;
+  }
   this.uMVMatrix.translate([x,-y,z]);
   return this;
 };
@@ -631,6 +636,16 @@ p5.RendererGL.prototype._getColorShader = function () {
       defaultShaders.normalVert, defaultShaders.basicFrag);
   }
   return this._defaultColorShader;
+};
+
+p5.RendererGL.prototype._getEmptyTexture = function () {
+  if (this._emptyTexture === undefined) {
+    // a plain white texture RGBA, full alpha, single pixel.
+    var im = new p5.Image(1, 1);
+    im.set(0, 0, 255);
+    this._emptyTexture = new p5.Texture(this, im);
+  }
+  return this._emptyTexture;
 };
 
 p5.RendererGL.prototype.getTexture = function (img) {
