@@ -1001,6 +1001,10 @@ p5.RendererGL.prototype._getFontShader = function() {
   return this._defaultFontShader;
 };
 
+p5.RendererGL.prototype._getBasicFrag = function() {
+  return defaultShaders.basicFrag;
+};
+
 p5.RendererGL.prototype._getEmptyTexture = function() {
   if (!this._emptyTexture) {
     // a plain white texture RGBA, full alpha, single pixel.

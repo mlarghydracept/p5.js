@@ -54,28 +54,67 @@ require('./p5.Texture');
  * @alt
  * zooming Mandelbrot set. a colorful, infinitely detailed fractal.
  */
-p5.prototype.loadShader = function(vertFilename, fragFilename) {
+p5.prototype.loadShader = function() {
   p5._validateParameters('loadShader', arguments);
+  var vertFilename, fragFilename, callback, errorCallback;
+  for (var i = 0; i < arguments.length; i++) {
+    if (typeof arguments[i] === 'function') {
+      if (typeof callback === 'undefined') {
+        callback = arguments[i];
+      } else if (typeof errorCallback === 'undefined') {
+        errorCallback = arguments[i];
+      }
+    } else if (typeof arguments[i] === 'string') {
+      if (!vertFilename) {
+        vertFilename = arguments[i];
+      } else if (!fragFilename) {
+        fragFilename = arguments[i];
+      }
+    }
+  }
+
+  if (!errorCallback) {
+    errorCallback = console.error;
+  }
+
   var loadedShader = new p5.Shader();
 
   var self = this;
   var loadedFrag = false;
   var loadedVert = false;
 
-  this.loadStrings(fragFilename, function(result) {
-    loadedShader._fragSrc = result.join('\n');
-    loadedFrag = true;
-    if (loadedVert) {
-      self._decrementPreload();
+  var onLoad = function() {
+    self._decrementPreload();
+    if (callback) {
+      callback(loadedShader);
     }
-  });
-  this.loadStrings(vertFilename, function(result) {
-    loadedShader._vertSrc = result.join('\n');
-    loadedVert = true;
-    if (loadedFrag) {
-      self._decrementPreload();
-    }
-  });
+  };
+
+  this.loadStrings(
+    vertFilename,
+    function(result) {
+      loadedShader._vertSrc = result.join('\n');
+      loadedVert = true;
+      if (!fragFilename || loadedFrag) {
+        onLoad();
+      }
+    },
+    errorCallback
+  );
+
+  if (fragFilename) {
+    this.loadStrings(
+      fragFilename,
+      function(result) {
+        loadedShader._fragSrc = result.join('\n');
+        loadedFrag = true;
+        if (loadedVert) {
+          onLoad();
+        }
+      },
+      errorCallback
+    );
+  }
 
   return loadedShader;
 };

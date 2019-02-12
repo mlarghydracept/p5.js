@@ -72,6 +72,9 @@ p5.Shader.prototype.init = function() {
 
     this._fragShader = gl.createShader(gl.FRAGMENT_SHADER);
     //load in our material frag shader
+    if (this._fragSrc === undefined) {
+      this._fragSrc = this._renderer._getBasicFrag();
+    }
     gl.shaderSource(this._fragShader, this._fragSrc);
     gl.compileShader(this._fragShader);
     // if our frag shader failed compilation?
